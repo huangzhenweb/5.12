@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>todos</title>
+    <link rel="stylesheet" href="bootstrap.min.css">
+    <script src="../vue.min.js"></script>
+</head>
+<style>
+    *{
+        padding: 0;
+        margin:0;
+        list-style:none;
+    }
+    html,body{
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(210deg, #9adbbe, #4fc08d)
+    }
+    .box{
+        width:400px;
+
+        border: 1px solid #ccc;
+        margin:0 auto;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 0 5px rgba(25, 25, 25, 0.25);
+    }
+    header{
+        width:100%;
+        height: 40px;
+        border-bottom: 1px solid #ccc;
+        text-align: center;
+        line-height: 40px;
+        font-size: 16px;
+        color:#87C38F;
+    }
+    .nav{
+        width:100%;
+    }
+    .nav li{
+        float: left;
+        padding-left: 30px;
+    }
+    .con{
+        width:100%;
+    }
+    .list-group-item span:nth-child(2){
+        color:#87C38F;
+    }
+    .list-group li{
+        overflow: hidden;
+    }
+    .list-group li span{
+        float: left;
+        margin:0 20px;
+        cursor: pointer;
+        line-height: 30px;
+    }
+    .list-group li span:nth-child(3){
+        display: block;
+        width:50px;
+        height: 30px;
+        float: right;
+        text-align: center;
+        line-height: 30px;
+        border-radius: 10px;
+    }
+    .list-group li span:first-child{
+        width:10px;height: 10px;
+        border:1px solid  #000;
+        border-radius: 50%;
+        margin-top: 10px;
+    }
+    .pink{
+        background: #87C38F;
+    }
+    button {
+        margin-top: 10px;
+        width: 68px;
+        height: 25px;
+        border: none;
+        font-size: 15px;
+        background: #87C38F;
+        border-radius: 20px;
+        color: #FFF;
+        outline: none;
+    }
+
+    input {
+        width: 250px;
+        height: 23px;
+        border: none;
+        /*outline: none;*/
+        color: #87C38F;
+        font-size: 15px;
+        padding-left: 5px;
+    }
+</style>
+<body>
+    <div class="box">
+        <header>Todos</header>
+        <ul class="nav nav-pills">
+            <li role="presentation"><a href="#" @click="changeState('all')">全部</a></li>
+            <li role="presentation"><a href="#" @click="changeState('done')">已完成</a></li>
+            <li role="presentation"><a href="#" @click="changeState('undo')">未完成</a></li>
+        </ul>
+        <div class="con">
+            <input v-model="text">
+            <!--<input type="text" class="form-control" id="exampleInputPassword1" v-model="text" @keydown.13="add">-->
+            <button v-on:click="add"> Add</button>
+            <ul class="list-group" v-if="state=='all'">
+                <li class="list-group-item" v-for="item in arr">
+                    <span @click="change(item.id,item.state)" :class="{pink:item.state===2}"></span>
+                    <span>{{item.con}}</span>
+                    <span @click="del(item.id,item.state)" class="label label-danger">删除</span>
+                </li>
+
+            </ul>
+
+            <ul class="list-group" v-if="state=='done'">
+                <li class="list-group-item" v-for="item in done">
+                    <span @click="change(item.id,item.state)" :class="{pink:item.state===2}"></span>
+                    <span>{{item.con}}</span>
+                    <span @click="del(item.id,item.state)">删除</span>
+                </li>
+
+            </ul>
+            <ul class="list-group" v-if="state=='undo'">
+                <li class="list-group-item" v-for="item in undo">
+                    <span @click="change(item.id,item.state)" :class="{pink:item.state===2}"></span>
+                    <span>{{item.con}}</span>
+                    <span @click="del(item.id,item.state)">删除</span>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
+<script>
+new Vue({
+    el:".box",
+    data:{
+        text:"",//input输入内容
+        arr:[],//全部
+        done:[],//完成的
+        undo:[],//未完成的
+        state:"all"//这个是这个对象的属性state
+    },
+    methods:{
+        //填加
+        add(){
+            var obj={
+                id:Math.random()+new Date().getTime(),
+                con:this.text,
+                state:1
+            }
+            this.text="";
+            this.arr.push(obj);
+            this.undo.push(obj);
+        },
+//        删除
+        del(id,state){
+            if(state==1){
+                //全部
+               this.arr=this.arr.filter(function(a){
+                   return a.id!=id; //返回的是不相等的id  因为如果穿过来的id相等就要从数组中删掉
+               });
+//                未读
+                this.undo=this.undo.filter(function(a){
+                    return a.id!=id;//未读也是同理，只留下id不等的。
+                })
+            }else{
+                //全部
+                this.arr=this.arr.filter(function(a){
+                    return a.id!=id; //返回的是不相等的id  因为如果穿过来的id相等就要从数组中删掉
+                });
+//                已读
+                this.done=this.done.filter(function(a){
+                    return a.id!=id;//已读也是同理，只留下id不等的。
+                })
+            }
+        },
+        change(id,state){
+//            alert(1)
+           if(state==1){
+                var obj=this.arr.filter(function(a){
+                    return a.id==id; //过滤 数组的id==传过来的id
+                })[0];
+                obj.state=2;//状态改成2，代表已读
+                 this.done.push(obj);//把过滤后符合要求的添加在已读的数组里。
+                this.undo=this.undo.filter(function(a){
+                    return a.id!=id; //过滤未读的 就是如果我选的id跟我传过来的id不一样 就留下
+                })
+           }else if(state==2){
+               var obj=this.arr.filter(function(a){//过滤原数组 放在一个obj对象上
+                   return a.id==id; //如果id等于传过来的id
+               })[0];
+               obj.state=1;//状态改成1；就成了未读了。
+               this.undo.push(obj);//把过滤到未读的添加到未读的数组里
+               this.done=this.done.filter(function(a){
+                   return a.id!=id;//过滤已读的，如果id！=传过来的id的时候就是要的已读的的
+               })
+           }
+        },
+        //状态选项
+        changeState(str){
+            this.state=str;
+        }
+
+    }
+})
+</script>
